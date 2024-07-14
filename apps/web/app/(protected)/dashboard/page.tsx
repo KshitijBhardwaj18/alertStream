@@ -1,11 +1,12 @@
 import { auth, signOut } from "@/auth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import WebSocketComponent from "@/components/websocket";
 
 const SettingsPage = async () => {
   const session = await auth();
 
-  session?.user.id;
+ 
 
  
 
@@ -49,6 +50,8 @@ const SettingsPage = async () => {
             
         </CardContent>
       </Card>
+
+      <WebSocketComponent session={session}/>
       </div>
     </div>
   );

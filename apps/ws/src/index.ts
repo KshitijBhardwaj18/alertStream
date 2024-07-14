@@ -9,7 +9,7 @@ const port = process.env.PORT ? parseInt(process.env.PORT) : 4000;
 const wss = new WebSocket.Server({ port: port });
 
 const users = new Map();
-let userIdCounter = 1;
+
 
 function broadcastPing(senderId) {
   users.forEach((client, id) => {
@@ -34,24 +34,35 @@ function updateUserList() {
 }
 
 wss.on('connection', (ws) => {
-  const userId = userIdCounter++;
-  users.set(userId, ws);
-  ws.send(JSON.stringify({ type: 'userId', userId }));
-  updateUserList();
+  let registeredUserId = null;
+
+ 
 
   ws.on('message', (message) => {
-    const data = JSON.parse(message.toString());
-    if (data.type === 'ping') {
-      if (data.target === 'all') {
-        broadcastPing(data.senderId);
-      } else {
-        sendPing(data.target, data.senderId);
-      }
+    const messageData = message.toString();
+    const data = JSON.parse(messageData);
+    switch (data.type) {
+      case 'init':
+        // Set the userId from the client's initial message
+        registeredUserId = data.user.id;
+        users.set(registeredUserId, ws);
+        ws.send(JSON.stringify({ type: 'userId', userId: registeredUserId }));
+        updateUserList();
+        break;
+      case 'ping':
+        if (data.target === 'all') {
+          broadcastPing(registeredUserId);
+        } else {
+          sendPing(data.target, registeredUserId);
+        }
+        break;
+      default:
+        console.log('Unknown message type received');
     }
   });
 
   ws.on('close', () => {
-    users.delete(userId);
+    users.delete(registeredUserId);
     updateUserList();
   });
 });
