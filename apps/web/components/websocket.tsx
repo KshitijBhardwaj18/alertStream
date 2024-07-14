@@ -22,13 +22,14 @@ const WebSocketComponent: React.FC<Session> = (session: Session) => {
   useEffect(() => {
       
       const socketInstance = new WebSocket(
-        "wss://alertstream.onrender.com:4000"
+        "ws://localhost:4000"
       );
 
       console.log("Connecting to WebSocket server...");
 
       socketInstance.onopen = () => {
         console.log("WebSocket connection opened");
+        if(session.user.id && session.user.email && session.user.name){
         const { id, email, name } = session.user;
         socketInstance.send(
           JSON.stringify({
@@ -36,6 +37,10 @@ const WebSocketComponent: React.FC<Session> = (session: Session) => {
             user: { id, email, name },
           })
         );
+
+    }
+
+    console.log("Sending init message with user ID", session.user.id);
         setUserId(session.user.id as string);
         setSocket(socketInstance);
       };
