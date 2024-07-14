@@ -1,10 +1,10 @@
-import { NewPasswordForm } from "@/components/auth/new-password-form";
+import NewPasswordWrapper from "@/components/auth/new-password-form";
 
 const NewPassword = () => {
 
     return(
 
-        <NewPasswordForm/>
+        <NewPasswordWrapper/>
     )
 }
 

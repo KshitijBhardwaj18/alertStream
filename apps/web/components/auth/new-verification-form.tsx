@@ -1,13 +1,13 @@
 "use client";
 import { BeatLoader } from "react-spinners";
-import { useCallback, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
 import { CardWrapper } from "./card-wrapper";
 import { useSearchParams } from "next/navigation";
 import { newVerification } from "@/actions/new-verification";
 import { FormError } from "../form-error";
 import { FormSuccess } from "../form-success";
 
-export const NewVerificationForm = () => {
+const NewVerificationForm = () => {
   const [error, setError] = useState<string | undefined>();
   const [success, setSuccess] = useState<string | undefined>();
 
@@ -47,3 +47,13 @@ export const NewVerificationForm = () => {
     </CardWrapper>
   );
 };
+
+const NewVerificationWrapper = () => (
+  
+    <Suspense>
+      <NewVerificationForm />
+    </Suspense>
+  
+)
+
+export default NewVerificationWrapper;

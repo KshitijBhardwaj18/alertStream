@@ -1,10 +1,10 @@
 
-import { NewVerificationForm } from "@/components/auth/new-verification-form";
+import NewVerificationWrapper from "@/components/auth/new-verification-form";
 
 const NewVerification = () =>  {
     return (
         <div>
-            <NewVerificationForm/>
+            <NewVerificationWrapper/>
         </div>
     )
 }

@@ -1,4 +1,4 @@
-"use passwrod";
+"use server";
 import * as z from "zod";
 import { PasswordSchema } from "@/schemas";
 
@@ -19,7 +19,7 @@ export const newPassword = async (
     return { error: "Invalid Fields" };
   }
 
-  const { password } = validatedFields.data;
+  const  password  = validatedFields.data?.password || "hello";
 
   const existingToken = await getPasswordResetTokenByToken(token);
 

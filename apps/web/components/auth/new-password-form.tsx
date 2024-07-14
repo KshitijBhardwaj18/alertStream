@@ -1,4 +1,5 @@
 "use client";
+import React, { Suspense } from 'react';
 import * as z from "zod";
 import { useTransition, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -23,13 +24,13 @@ import { CardWrapper } from "./card-wrapper";
 import { Button } from "../ui/button";
 import { FormError } from "../form-error";
 import { FormSuccess } from "../form-success";
-import {newPassword } from "@/actions/new-password";
+import { newPassword } from "@/actions/new-password";
 
-export const NewPasswordForm = () => {
- const searchParams = useSearchParams();
- const token = searchParams.get("token");
+ const NewPasswordForm = () => {
+  const searchParams = useSearchParams();
+  const token = searchParams.get("token");
 
-const [error, setError] = useState<string | undefined>("");
+  const [error, setError] = useState<string | undefined>("");
   const [success, setSuccess] = useState<string | undefined>("");
   const [isPending, startTransition] = useTransition();
 
@@ -37,7 +38,6 @@ const [error, setError] = useState<string | undefined>("");
     resolver: zodResolver(PasswordSchema),
     defaultValues: {
       password: "",
-      
     },
   });
 
@@ -46,13 +46,13 @@ const [error, setError] = useState<string | undefined>("");
     setSuccess("");
 
     startTransition(() => {
-      newPassword(values,token).then((data) => {
+      newPassword(values, token).then((data) => {
         setError(data?.error);
-        setSuccess(data?.success);  
+        setSuccess(data?.success);
       });
     });
 
-    console.log(values)
+    console.log(values);
   };
 
   return (
@@ -60,7 +60,6 @@ const [error, setError] = useState<string | undefined>("");
       headerLabel="Enter new Password"
       backButtonLabel="Go back to login"
       backButtonHref="/auth/login"
-      
     >
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -82,16 +81,24 @@ const [error, setError] = useState<string | undefined>("");
                 </FormItem>
               )}
             />
-
-            
           </div>
           <FormError message={error} />
           <FormSuccess message={success} />
           <Button disabled={isPending} type="submit" className="w-full">
-           Reset Password
+            Reset Password
           </Button>
         </form>
       </Form>
     </CardWrapper>
   );
 };
+
+const NewPasswordWrapper = () => (
+  <Suspense fallback={<div>Loading...</div>}>
+    <NewPasswordForm/>
+  </Suspense>
+);
+
+
+export default NewPasswordWrapper;
+

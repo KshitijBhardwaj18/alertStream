@@ -4,6 +4,10 @@ import React, { useState, useEffect } from "react";
 import { Session } from "next-auth";
 import { useRouter } from "next/navigation";
 
+interface WebSocketComponentProps {
+  session: Session | null;
+}
+
 interface WebSocketMessage {
   type: string;
   senderId?: string | undefined;
@@ -11,7 +15,7 @@ interface WebSocketMessage {
   users?: string[];
 }
 
-const WebSocketComponent: React.FC<Session> = (session: Session) => {
+const WebSocketComponent: React.FC<WebSocketComponentProps> = ({ session }) => {
   const [userId, setUserId] = useState<string | undefined | null>(null);
   const [socket, setSocket] = useState<WebSocket | null>(null);
   const [users, setUsers] = useState<string[]>([]);
@@ -29,7 +33,7 @@ const WebSocketComponent: React.FC<Session> = (session: Session) => {
 
       socketInstance.onopen = () => {
         console.log("WebSocket connection opened");
-        if(session.user.id && session.user.email && session.user.name){
+        if(session?.user.id && session?.user.email && session?.user.name){
         const { id, email, name } = session.user;
         socketInstance.send(
           JSON.stringify({
@@ -40,8 +44,8 @@ const WebSocketComponent: React.FC<Session> = (session: Session) => {
 
     }
 
-    console.log("Sending init message with user ID", session.user.id);
-        setUserId(session.user.id as string);
+    console.log("Sending init message with user ID", session?.user.id);
+        setUserId(session?.user.id as string);
         setSocket(socketInstance);
       };
 

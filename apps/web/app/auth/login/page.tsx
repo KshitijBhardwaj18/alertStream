@@ -1,9 +1,9 @@
-import { LoginForm } from "@/components/auth/login-form"
+import LoginFormWrapper from "@/components/auth/login-form"
 
 export default function Login (){
     return (
         <div>
-            <LoginForm/>
+            <LoginFormWrapper/>
         </div>
     )
 

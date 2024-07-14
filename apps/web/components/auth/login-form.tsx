@@ -1,6 +1,6 @@
 "use client";
 import * as z from "zod";
-import { useTransition, useState } from "react";
+import { useTransition, useState, Suspense } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { LoginSchema } from "@/schemas";
@@ -24,7 +24,7 @@ import { FormSuccess } from "../form-success";
 import { useSearchParams } from "next/navigation";
 import { login } from "@/actions/login";
 
-export const LoginForm = () => {
+const LoginForm = () => {
   const searchParams = useSearchParams();
   const urlError =
     searchParams.get("error") === "OAuthAccountNotLinked"
@@ -116,3 +116,15 @@ export const LoginForm = () => {
     </CardWrapper>
   );
 };
+
+
+const LoginFormWrapper = () => 
+   (
+    <Suspense>
+      <LoginForm/>
+    </Suspense>
+    
+  );
+
+
+export default LoginFormWrapper;
