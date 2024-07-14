@@ -1,6 +1,8 @@
 import * as WebSocket from 'ws';
 
-const wss = new WebSocket.Server({ port: 8080 });
+const port = process.env.PORT || 4000;
+
+const wss = new WebSocket.Server({ port: port });
 
 const users = new Map();
 let userIdCounter = 1;
