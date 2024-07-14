@@ -1,6 +1,10 @@
 import * as WebSocket from 'ws';
+import * as dotenv from 'dotenv';
 
-const port = process.env.PORT || 4000;
+dotenv.config();
+
+const port = process.env.PORT ? parseInt(process.env.PORT) : 4000;
+
 
 const wss = new WebSocket.Server({ port: port });
 
