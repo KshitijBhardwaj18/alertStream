@@ -1,94 +1,106 @@
-// components/WebSocketComponent.tsx
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import { auth } from "@/auth";
-import { Session } from 'next-auth';
+import React, { useState, useEffect } from "react";
+import { Session } from "next-auth";
+import { useRouter } from "next/navigation";
 
 interface WebSocketMessage {
   type: string;
-  senderId?: string;
+  senderId?: string | undefined;
   target?: string | number;
   users?: string[];
 }
 
-
-
-const WebSocketComponent: React.FC<Session> =  (session:Session) => {
-  const [userId, setUserId] = useState<string | null>(null);
+const WebSocketComponent: React.FC<Session> = (session: Session) => {
+  const [userId, setUserId] = useState<string | undefined | null>(null);
   const [socket, setSocket] = useState<WebSocket | null>(null);
-  const [users, setUsers] = useState<any[]>([]);
-  const [message, setMessage] = useState<string>('');
+  const [users, setUsers] = useState<string[]>([]);
+  const [message, setMessage] = useState<string>("");
 
-  console.log(session);
-
+  const router = useRouter();
 
   useEffect(() => {
-    // Establish WebSocket connection
-    
-    
-    const socketInstance = new WebSocket('wss://alertstream.onrender.com/:4000');
-
-    socketInstance.onopen = () => {
-      console.log('WebSocket connection opened');
-      if(session.user){
-        if(session.user.id && session.user.email && session.user.name){
-        const {id,email,name} = session.user;
-        socketInstance.send(JSON.stringify({ type: 'init', user: { id, email, name } }));
-    }
-    }
       
-      setSocket(socketInstance);
-      if(session.user.id){
-      setUserId(session.user.id);
-      }
-    };
+      const socketInstance = new WebSocket(
+        "wss://alertstream.onrender.com:4000"
+      );
 
-    socketInstance.onmessage = (event) => {
-      const data: WebSocketMessage = JSON.parse(event.data);
-      if (data.type === 'userList' && data.users) {
-        setUsers(data.users);
-      } else if (data.type === 'ping' && data.senderId !== undefined) {
-        setMessage(`Ping received from user ${data.senderId}`);
-      } else if (data.type === 'userId' && data.senderId !== undefined) {
-        setUserId(data.senderId);
-      }
-    };
+      console.log("Connecting to WebSocket server...");
 
-    socketInstance.onclose = () => {
-      console.log('WebSocket connection closed');
-      setSocket(null);
-    };
+      socketInstance.onopen = () => {
+        console.log("WebSocket connection opened");
+        const { id, email, name } = session.user;
+        socketInstance.send(
+          JSON.stringify({
+            type: "init",
+            user: { id, email, name },
+          })
+        );
+        setUserId(session.user.id as string);
+        setSocket(socketInstance);
+      };
 
-    socketInstance.onerror = (error) => {
-      console.error('WebSocket error:', error);
-    };
+      socketInstance.onmessage = (event) => {
+        const data: WebSocketMessage = JSON.parse(event.data);
+        switch (data.type) {
+          case "userList":
+            setUsers(data.users || []);
+            console.log("Received user list", data.users);
+            break;
+          case "ping":
+            setMessage(`Ping received from user ${data.senderId}`);
+            break;
+          case "userId":
+            setUserId(data.senderId);
+            break;
+          default:
+            console.log("Received unknown message type");
+        }
+      };
 
-   
-  }, []);
+      socketInstance.onclose = () => {
+        console.log("WebSocket connection closed");
+        setSocket(null);
+      };
+
+      socketInstance.onerror = (error) => {
+        console.error("WebSocket error:", error);
+      };
+
+     
+    
+  }, [router]);
 
   const sendPingToAll = () => {
-    if (socket && userId !== null) {
-      const message: WebSocketMessage = { type: 'ping', target: 'all', senderId: userId };
-      socket.send(JSON.stringify(message));
+    if (socket && userId) {
+      socket.send(
+        JSON.stringify({
+          type: "ping",
+          target: "all",
+          senderId: userId,
+        })
+      );
     }
   };
 
-  const sendPingToUser = (targetId: number) => {
-    if (socket && userId !== null) {
-      const message: WebSocketMessage = { type: 'ping', target: targetId, senderId: userId };
-      socket.send(JSON.stringify(message));
+  const sendPingToUser = (targetId: string) => {
+    if (socket && userId) {
+      socket.send(
+        JSON.stringify({
+          type: "ping",
+          target: targetId,
+          senderId: userId,
+        })
+      );
     }
   };
+
+ 
 
   return (
     <div>
       <h1>WebSocket Example</h1>
-      {userId !== null ? (
-        <p>Your user ID: {userId}</p>
-      ) : (
-        <p>Loading user ID...</p>
-      )}
+      <p>Your user ID: {userId || "Loading user ID..."}</p>
       <div>
         <h2>Users:</h2>
         <ul>
