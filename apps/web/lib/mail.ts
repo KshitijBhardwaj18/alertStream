@@ -6,7 +6,7 @@ export const sendVerificationEmail = async (
     email: string,
     token: string
 ) => {
-    const confirmLink = `http://localhost:3000/auth/new-verification?token=${token}`
+    const confirmLink = `https://alert-stream-web.vercel.app/auth/new-verification?token=${token}`
 
     await resend.emails.send({
         from : "onboarding@pehalwan.co.in",
@@ -17,7 +17,7 @@ export const sendVerificationEmail = async (
 }
 
 export const sendResetVerificationEmail = async (email: string, token: string) => {
-    const confirmLink = `http://localhost:3000/auth/new-password?token=${token}`
+    const confirmLink = `https://alert-stream-web.vercel.app/new-password?token=${token}`
     await resend.emails.send({
         from : "onboarding@pehalwan.co.in",
         to: email,
