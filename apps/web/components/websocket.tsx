@@ -39,7 +39,7 @@ const WebSocketComponent: React.FC<WebSocketComponentProps> = ({session}) => {
 
   useEffect(() => {
     if (session?.user?.token) {
-      const socketInstance = new WebSocket(`${process.env.ws}?token=${session.user.token}`);
+      const socketInstance = new WebSocket(`ws://alertstream.onrender.com:4000?token=${session.user.token}`);
 
       console.log("Connecting to WebSocket server...");
 
