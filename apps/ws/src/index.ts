@@ -1,5 +1,4 @@
 import * as WebSocket from 'ws';
-import * as http from 'http';
 import * as dotenv from 'dotenv';
 import * as jwt from 'jsonwebtoken';
 
@@ -7,24 +6,7 @@ dotenv.config();
 
 const port = 4000;
 
-const server = http.createServer((req, res) => {
-  // Handle CORS for HTTP requests
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-
-  if (req.method === 'OPTIONS') {
-    res.writeHead(204);
-    res.end();
-    return;
-  }
-
-  res.writeHead(404);
-  res.end();
-});
-
-const wss = new WebSocket.Server({ server });
+const wss = new WebSocket.Server({ port: port });
 
 interface User {
   email: string;
@@ -64,13 +46,14 @@ wss.on('connection', (ws: WebSocket, req) => {
   const token = params.get('token');
 
   if (!token) {
+    
     ws.close(1008, 'Token not provided');
     return;
   }
 
   let decoded: User;
   try {
-    decoded = jwt.verify(token, process.env.JWT_SECRET as string) as User;
+    decoded = jwt.verify(token, "secret") as User;
   } catch (err) {
     console.log('Invalid token:', err);
     ws.close(1008, 'Invalid token');
@@ -108,6 +91,4 @@ wss.on('connection', (ws: WebSocket, req) => {
   });
 });
 
-server.listen(port, () => {
-  console.log('WebSocket server is running on port', port);
-});
+console.log('WebSocket server is running on port', port);
