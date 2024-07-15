@@ -42,26 +42,6 @@ function updateUserList() {
 }
 
 wss.on('connection', (ws: WebSocket, req) => {
-  const params = new URLSearchParams(req.url?.split('?')[1]);
-  const token = params.get('token');
-
-  if (!token) {
-    
-    ws.close(1008, 'Token not provided');
-    return;
-  }
-
-  let decoded: User;
-  try {
-    decoded = jwt.verify(token, "secret") as User;
-  } catch (err) {
-    console.log('Invalid token:', err);
-    ws.close(1008, 'Invalid token');
-    return;
-  }
-
-  const registeredUser: User = decoded;
-
   ws.on('message', (message: WebSocket.Data) => {
     const messageData = message.toString();
     const data = JSON.parse(messageData);
@@ -84,6 +64,48 @@ wss.on('connection', (ws: WebSocket, req) => {
         console.log('Unknown message type received');
     }
   });
+  const params = new URLSearchParams(req.url?.split('?')[1]);
+  const token = params.get('token');
+
+  if (!token) {
+    
+    ws.close(1008, 'Token not provided');
+    return;
+  }
+
+  let decoded: User;
+  try {
+    decoded = jwt.verify(token, "secret") as User;
+  } catch (err) {
+    console.log('Invalid token:', err);
+    ws.close(1008, 'Invalid token');
+    return;
+  }
+
+  const registeredUser: User = decoded;
+
+  // ws.on('message', (message: WebSocket.Data) => {
+  //   const messageData = message.toString();
+  //   const data = JSON.parse(messageData);
+  //   switch (data.type) {
+  //     case 'init':
+  //       users.set(registeredUser.id, { ws, user: registeredUser });
+  //       ws.send(JSON.stringify({ type: 'userId', userId: registeredUser.id }));
+  //       updateUserList();
+  //       break;
+  //     case 'ping':
+  //       if (registeredUser) {
+  //         if (data.target === 'all') {
+  //           broadcastPing(registeredUser.id, registeredUser.name);
+  //         } else {
+  //           sendPing(data.target, registeredUser.name);
+  //         }
+  //       }
+  //       break;
+  //     default:
+  //       console.log('Unknown message type received');
+  //   }
+  // });
 
   ws.on('close', () => {
     users.delete(registeredUser.id);
