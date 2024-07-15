@@ -4,7 +4,9 @@ import * as jwt from 'jsonwebtoken';
 
 dotenv.config();
 
-const port = 4000;
+
+const port = parseInt(process.env.PORT || '4000', 10);
+
 
 const wss = new WebSocket.Server({ port: port });
 
