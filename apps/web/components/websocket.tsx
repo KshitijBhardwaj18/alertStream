@@ -142,6 +142,7 @@ const WebSocketComponent: React.FC<WebSocketComponentProps> = ({session}) => {
       <ToastContainer />
       <div className="flex flex-row w-full justify-between items-center p-5 mb-4 ">
         <p className="text-2xl font-bold">Connected Users</p>
+        <p className="text-lg font-bold text-slate-400">The server is hosted on render free trial so it may take some time to connect ^50s</p>
         <Button onClick={sendPingToAll} className="mr-[8rem] px-8 bg-[#fca063] text-black hover:text-white">
           Ping ALL
         </Button>
