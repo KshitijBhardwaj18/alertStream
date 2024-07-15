@@ -3,8 +3,9 @@ import authConfig from "./auth.config";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { db } from "./lib/db";
 import { getUserById } from "./data/user";
-
-
+import { v4 as uuidv4 } from "uuid";
+import jwt from "jsonwebtoken";
+import { emitWarning } from "process";
 
 export const {
   handlers: { GET, POST },
@@ -41,6 +42,7 @@ export const {
     async session({ token, session }) {
       if (token.sub && session.user) {
         session.user.id = token.sub;
+        session.user.token = token.raw as String;
       }
 
       // if (token.role && session.user) {
@@ -61,6 +63,10 @@ export const {
       }
 
       token.role = existingUser.role;
+
+      const user = { name: token.name, email: token.email, id: token.sub };
+      token.raw = jwt.sign(user, "secret", { algorithm: "HS256" });
+
       return token;
     },
   },

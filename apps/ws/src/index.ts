@@ -1,59 +1,83 @@
 import * as WebSocket from 'ws';
 import * as dotenv from 'dotenv';
+import * as jwt from 'jsonwebtoken';
 
 dotenv.config();
 
-const port =  4000;
-
+const port = 4000;
 
 const wss = new WebSocket.Server({ port: port });
 
-const users = new Map();
+interface User {
+  email: string;
+  id: string;
+  name: string;
+}
 
+const users = new Map<string, { ws: WebSocket, user: User }>();
 
-function broadcastPing(senderId) {
-  users.forEach((client, id) => {
-    if (id !== senderId) {
-      client.send(JSON.stringify({ type: 'ping', senderId }));
-    }
+function broadcastPing(senderId: string, name: string) {
+  users.forEach(({ ws }, id) => {
+    ws.send(JSON.stringify({ type: 'pingALL', name, senderId }));
   });
 }
 
-function sendPing(target, senderId) {
-  const targetWs = users.get(target);
+function sendPing(target: string, name: string) {
+  const targetWs = users.get(target)?.ws;
   if (targetWs && targetWs.readyState === WebSocket.OPEN) {
-    targetWs.send(JSON.stringify({ type: 'ping', senderId }));
+    console.log("Ping sent to:", target);
+    targetWs.send(JSON.stringify({ type: 'ping', name }));
   }
 }
 
 function updateUserList() {
-  const userList = Array.from(users.keys());
-  users.forEach((client) => {
-    client.send(JSON.stringify({ type: 'userList', users: userList }));
+  const userList = Array.from(users.values()).map(({ user }) => ({
+    id: user.id,
+    email: user.email,
+    name: user.name,
+  }));
+  users.forEach(({ ws }) => {
+    ws.send(JSON.stringify({ type: 'userList', users: userList }));
   });
 }
 
-wss.on('connection', (ws) => {
-  let registeredUserId = null;
+wss.on('connection', (ws: WebSocket, req) => {
+  const params = new URLSearchParams(req.url?.split('?')[1]);
+  const token = params.get('token');
 
- 
+  if (!token) {
+    
+    ws.close(1008, 'Token not provided');
+    return;
+  }
 
-  ws.on('message', (message) => {
+  let decoded: User;
+  try {
+    decoded = jwt.verify(token, "secret") as User;
+  } catch (err) {
+    console.log('Invalid token:', err);
+    ws.close(1008, 'Invalid token');
+    return;
+  }
+
+  const registeredUser: User = decoded;
+
+  ws.on('message', (message: WebSocket.Data) => {
     const messageData = message.toString();
     const data = JSON.parse(messageData);
     switch (data.type) {
       case 'init':
-        // Set the userId from the client's initial message
-        registeredUserId = data.user.id;
-        users.set(registeredUserId, ws);
-        ws.send(JSON.stringify({ type: 'userId', userId: registeredUserId }));
+        users.set(registeredUser.id, { ws, user: registeredUser });
+        ws.send(JSON.stringify({ type: 'userId', userId: registeredUser.id }));
         updateUserList();
         break;
       case 'ping':
-        if (data.target === 'all') {
-          broadcastPing(registeredUserId);
-        } else {
-          sendPing(data.target, registeredUserId);
+        if (registeredUser) {
+          if (data.target === 'all') {
+            broadcastPing(registeredUser.id, registeredUser.name);
+          } else {
+            sendPing(data.target, registeredUser.name);
+          }
         }
         break;
       default:
@@ -62,9 +86,9 @@ wss.on('connection', (ws) => {
   });
 
   ws.on('close', () => {
-    users.delete(registeredUserId);
+    users.delete(registeredUser.id);
     updateUserList();
   });
 });
 
-console.log('WebSocket server is running on port 8080');
+console.log('WebSocket server is running on port', port);
