@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Button } from "./ui/button";
-import { auth } from "@/auth";
+import { auth, signOut } from "@/auth";
 
 
 
@@ -65,6 +65,8 @@ const Navbar = async () => {
           </Link>
           </div>
         ) : (
+
+          <div className="flex flex-row gap-3">
           <Link href="/dashboard">
             <Button
               className="bg-[#fca063] text-black hover:text-white px-10 "
@@ -72,6 +74,23 @@ const Navbar = async () => {
               Dashboard
             </Button> 
           </Link>
+          <form action={async () => {
+            "use server";
+
+            await signOut();
+        }}
+        >
+            <Button
+              className="bg-[#fca063] text-black hover:text-white px-10 "
+              type="submit"
+            >
+              Logout
+            </Button> 
+        </form>
+         
+          </div>
+
+            
 
           
         )}
